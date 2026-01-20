@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .subscription-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .subscription-card:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .subscription-card.selected {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .subscription-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .subscription-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .discount-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .subscription-price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .period {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .original-price {
+            color: #ccc;
+            text-decoration: line-through;
+            font-size: 16px;
+        }
+
+        .radio {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 12px;
+            position: relative;
+        }
+
+        .subscription-card.selected .radio {
+            border-color: #667eea;
+            background: #667eea;
+        }
+
+        .subscription-card.selected .radio::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .content-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .content-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .content-text h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .content-text p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: #ff6b6b;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Onboarding Screen -->
+    <div class="container">
+        <div id="onboarding" class="screen active">
+            <div class="icon">⭐</div>
+            <h1>Добро пожаловать!</h1>
+            <p>Откройте для себя все возможности нашего приложения</p>
+            <button onclick="showPaywall()">Продолжить</button>
+        </div>
+
+        <!-- Paywall Screen -->
+        <div id="paywall" class="screen">
+            <h1>Выберите план подписки</h1>
+            <div class="subscription-card" onclick="selectPlan('month')" id="plan-month">
+                <div class="radio"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div>
+                        <div class="subscription-title">Месяц</div>
+                        <div class="subscription-price">
+                            <span class="price">299 ₽</span>
+                            <span class="period">/месяц</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="subscription-card selected" onclick="selectPlan('year')" id="plan-year">
+                <div class="radio"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <div class="subscription-title">Год</div>
+                            <div class="discount-badge">СКИДКА</div>
+                        </div>
+                        <div class="subscription-price">
+                            <span class="price">1999 ₽</span>
+                            <span class="period">/год</span>
+                            <span class="original-price">3588 ₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="purchaseSubscription()">Продолжить</button>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="home" class="screen">
+            <h1>Главный экран</h1>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; color: white; text-align: left;">
+                <h2 style="color: white; margin-bottom: 8px;">🎉 Добро пожаловать!</h2>
+                <p style="color: rgba(255,255,255,0.9); margin: 0;">Вы успешно оформили подписку</p>
+            </div>
+            <div style="text-align: left;">
+                <h2 style="font-size: 20px; margin-bottom: 16px;">Контент</h2>
+                <div class="content-item">
+                    <div class="content-icon" style="background: #fff3cd;">⭐</div>
+                    <div class="content-text">
+                        <h3>Премиум функции</h3>
+                        <p>Доступ ко всем функциям приложения</p>
+                    </div>
+                </div>
+                <div class="content-item">
+                    <div class="content-icon" style="background: #cfe2ff;">☁️</div>
+                    <div class="content-text">
+                        <h3>Безлимитное хранилище</h3>
+                        <p>Сохраняйте неограниченное количество данных</p>
+                    </div>
+                </div>
+                <div class="content-item">
+                    <div class="content-icon" style="background: #d1e7dd;">💬</div>
+                    <div class="content-text">
+                        <h3>Приоритетная поддержка</h3>
+                        <p>Быстрая помощь от нашей команды</p>
+                    </div>
+                </div>
+                <div class="content-item">
+                    <div class="content-icon" style="background: #e2d9f3;">🔔</div>
+                    <div class="content-text">
+                        <h3>Уведомления</h3>
+                        <p>Получайте важные обновления первыми</p>
+                    </div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="clearSubscription()">Отменить подписку</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPlan = 'year';
+
+        // Проверка подписки при загрузке
+        window.onload = function() {
+            const hasSubscription = localStorage.getItem('has_subscription') === 'true';
+            const hasSeenOnboarding = localStorage.getItem('has_seen_onboarding') === 'true';
+
+            if (hasSubscription) {
+                showScreen('home');
+            } else if (hasSeenOnboarding) {
+                showScreen('paywall');
+            } else {
+                showScreen('onboarding');
+            }
+        };
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showPaywall() {
+            localStorage.setItem('has_seen_onboarding', 'true');
+            showScreen('paywall');
+        }
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.getElementById('plan-month').classList.toggle('selected', plan === 'month');
+            document.getElementById('plan-year').classList.toggle('selected', plan === 'year');
+        }
+
+        function purchaseSubscription() {
+            if (!selectedPlan) {
+                alert('Пожалуйста, выберите план подписки');
+                return;
+            }
+
+            localStorage.setItem('has_subscription', 'true');
+            localStorage.setItem('subscription_plan', selectedPlan);
+            localStorage.setItem('subscription_date', Date.now().toString());
+            showScreen('home');
+        }
+
+        function clearSubscription() {
+            localStorage.removeItem('has_subscription');
+            localStorage.removeItem('subscription_plan');
+            localStorage.removeItem('subscription_date');
+            showScreen('paywall');
+        }
+    </script>
+</body>
+</html>
